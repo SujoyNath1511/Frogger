@@ -492,34 +492,68 @@
 		# a0 is the x coordinate, a1 is the y coordinate. a2 is the new x offset to be added. a3 is the y offset to be added.
 		
 		# Add the offset to x (add $a0 and $a2 and store it in $a0)
+		add $a0, $a0, $a2
 		
 		# Add the offset to y (add $a1 and $a3 and store it in $a1)
+		add $a1, $a1, $a3
 		
 		# If x is less than 0:
+		bltz $a0, x_less_than_0
 		
-		# Else if x is greater than 63
+		# Else if x is greater than 56
+		bgt $a0, 56, x_more_than_56
 		
+		# Otherwise, do nothing
+		j end_check_frog_x
 		
 		# IF x < 0 body ($a0 < 0)
-		
-		# IF x > 63 body ($a0 > 63)
-		
+		x_less_than_0:
+			
+			# Set x to 0
+			addi $a0, $zero, $zero
+			
+			j end_check_frog_x
+			
+		# IF x > 56 body ($a0 > 63)
+		x_more_than_56:
+			
+			# Set x to 56
+			li $a0, 56
+			
 		# End if
+		end_check_frog_x:
+		
 		
 		# If y is less than 0: ($a1 < 0)
+		bltz $a1, y_less_than_0
 		
-		# Else if y is greater than 63 ($a1 > 63)
+		# Else if y is greater than 56 ($a1 > 56)
+		bgt $a1, 56, y_more_than_56
 		
-		# IF x < 0 body
+		# Otherwise do nothing
+		j end_check_frog_y
 		
-		# IF x > 63 body
+		# IF y < 0 body
+		y_less_than_0:
+		
+			# Set y to 0
+			addi $a1, $zero, $zero
+			
+			j end_check_frog_y
+		
+		# IF y > 56 body
+		y_more_than_56: 
+			# Set x to 56
+			li $a1, 56
 		
 		# End if
+		end_check_frog_y:
 		
 		# Store $a0 in frog_x
+		sw $a0, frog_x
 		
 		# Store $a1 in frog_y
-		
+		sw $a1, frog_y
 		
 #==== Draw Items into the Buffer =================================================================================================	
 	DRAW_RECT:
