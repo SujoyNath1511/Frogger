@@ -153,222 +153,298 @@
 	main:
 		# INTIALIZE ALL THE VARIABLES:
 		lw $t0, displayAddress # $t0 stores the base address for display
-		la $s0, displayBuffer  # $s0 stores the base address for the buffer. 
+		la $s0, displayBuffer  # $s0 stores the base address for the buffer.
 		
 		game_loop_start:
+		
+			# CHECK FOR KEYBOARD INPUT: ----------------------------------------------------------------------------------------
+		
+			# UPDATE THE LOCATIONS OF ITEMS ----------------------------------------------------------------------------------------
+				
+			# Move Car Large 1:
+			lw $a0, car_large_1_x 
+			li $a1, -1
+			la $a2, car_large_1_x
+				
+			jal MOVE_RECT 
+			
+			# Move Car Large 2:
+			lw $a0, car_large_2_x 
+			li $a1, 1
+			la $a2, car_large_2_x
+				
+			jal MOVE_RECT
+			
+			# Move Car Small 1:
+			lw $a0, car_small_1_x 
+			li $a1, -1
+			la $a2, car_small_1_x
+				
+			jal MOVE_RECT
+			
+			# Move Car Small 2:
+			lw $a0, car_small_2_x 
+			li $a1, 1
+			la $a2, car_small_2_x
+				
+			jal MOVE_RECT
+			
+			# Move Log 1:
+			lw $a0, log_1_x 
+			li $a1, -1
+			la $a2, log_1_x
+				
+			jal MOVE_RECT
+			
+			# Move Log 2:
+			lw $a0, log_2_x 
+			li $a1, -1
+			la $a2, log_2_x
+				
+			jal MOVE_RECT
+			
+			# Move Log 3:
+			lw $a0, log_3_x 
+			li $a1, -1
+			la $a2, log_3_x
+				
+			jal MOVE_RECT
+			
+			# Move Log 4:
+			lw $a0, log_4_x 
+			li $a1, -1
+			la $a2, log_4_x
+				
+			jal MOVE_RECT
+			
+			# Move Turtle 1:
+			lw $a0, turtle_1_x 
+			li $a1, 1
+			la $a2, turtle_1_x
+				
+			jal MOVE_RECT
+			
+			# Move Turtle 2:
+			lw $a0, turtle_2_x 
+			li $a1, 1
+			la $a2, turtle_2_x
+				
+			jal MOVE_RECT
+			
+			# Move Turtle 3:
+			lw $a0, turtle_3_x 
+			li $a1, 1
+			la $a2, turtle_3_x
+				
+			jal MOVE_RECT
+		
+			# REDRAW THE SCREEN INTO THE BUFFER ----------------------------------------------------------------------------------------
+		
+			# Draw the start region
+			addi $a0, $zero, 0		# Left corner x
+			addi $a1, $zero, 56		# Left corner y
+			addi $a2, $zero, 64		# width
+			addi $a3, $zero, 8		# height
+			lw $t4, start_col 		# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+		
+			jal DRAW_RECT		# Draw the region
+		
+			# Draw the road
+			addi $a0, $zero, 0		# Left corner x
+			addi $a1, $zero, 40		# Left corner y
+			addi $a2, $zero, 64		# width
+			addi $a3, $zero, 16		# height
+			lw $t4, road_col 		# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+		
+			jal DRAW_RECT		# Draw the region
+		
+			# Draw the safe zone
+			addi $a0, $zero, 0		# Left corner x
+			addi $a1, $zero, 32		# Left corner y
+			addi $a2, $zero, 64		# width
+			addi $a3, $zero, 8		# height
+			lw $t4, start_col 		# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+		
+			jal DRAW_RECT		# Draw the region
+		
+			# Draw the Water zone
+			addi $a0, $zero, 0		# Left corner x
+			addi $a1, $zero, 8		# Left corner y
+			addi $a2, $zero, 64		# width
+			addi $a3, $zero, 24		# height
+			lw $t4, water_col 		# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT		# Draw the region
+			
+			# Draw the Goal zone
+			addi $a0, $zero, 0		# Left corner x
+			addi $a1, $zero, 0		# Left corner y
+			addi $a2, $zero, 64		# width
+			addi $a3, $zero, 8		# height
+			lw $t4, goal_col 		# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+		
+			jal DRAW_RECT		# Draw the region
+		
+			# Draw the Vehicles onto the road:
+		
+			# 	Large Vehicle 1:
+			lw $a0, car_large_1_x		# Left corner x
+			lw $a1, car_large_1_y		# Left corner y
+			lw $a2, car_large_w			# width
+			lw $a3, car_large_h			# height
+			lw $t4, car_large_1_col 	# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT		# Draw the vehicle
+			
+			# 	Small Vehicle 1:
+			lw $a0, car_small_1_x		# Left corner x
+			lw $a1, car_small_1_y		# Left corner y
+			lw $a2, car_small_w			# width
+			lw $a3, car_small_h			# height
+			lw $t4, car_small_1_col 	# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT		# Draw the vehicle
+		
+			# 	Large Vehicle 2:
+			lw $a0, car_large_2_x		# Left corner x
+			lw $a1, car_large_2_y		# Left corner y
+			lw $a2, car_large_w			# width
+			lw $a3, car_large_h			# height
+			lw $t4, car_large_2_col 	# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+		
+			jal DRAW_RECT		# Draw the vehicle
+		
+			# 	Small Vehicle 2:
+			lw $a0, car_small_2_x		# Left corner x
+			lw $a1, car_small_2_y		# Left corner y
+			lw $a2, car_small_w			# width
+			lw $a3, car_small_h			# height
+			lw $t4, car_small_2_col 	# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+		
+			jal DRAW_RECT		# Draw the vehicle
+		
+			
+			# Draw the Logs
+		
+			# 	Log 1:
+			lw $a0, log_1_x				# Left corner x
+			lw $a1, log_1_y				# Left corner y
+			lw $a2, log_large_w			# width
+			lw $a3, log_large_h			# height
+			lw $t4, log_col_1 			# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT		# Draw the log
 	
-		# CHECK FOR KEYBOARD INPUT: ----------------------------------------------------------------------------------------
-		
-		# UPDATE THE LOCATIONS OF ITEMS ----------------------------------------------------------------------------------------
-		
-		# Update the location 
-		
-		# REDRAW THE SCREEN INTO THE BUFFER ----------------------------------------------------------------------------------------
-		
-		# Draw the start region
-		addi $a0, $zero, 0		# Left corner x
-		addi $a1, $zero, 56		# Left corner y
-		addi $a2, $zero, 64		# width
-		addi $a3, $zero, 8		# height
-		lw $t4, start_col 		# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the region
-		
-		# Draw the road
-		addi $a0, $zero, 0		# Left corner x
-		addi $a1, $zero, 40		# Left corner y
-		addi $a2, $zero, 64		# width
-		addi $a3, $zero, 16		# height
-		lw $t4, road_col 		# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the region
-		
-		# Draw the safe zone
-		addi $a0, $zero, 0		# Left corner x
-		addi $a1, $zero, 32		# Left corner y
-		addi $a2, $zero, 64		# width
-		addi $a3, $zero, 8		# height
-		lw $t4, start_col 		# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the region
-		
-		# Draw the Water zone
-		addi $a0, $zero, 0		# Left corner x
-		addi $a1, $zero, 8		# Left corner y
-		addi $a2, $zero, 64		# width
-		addi $a3, $zero, 24		# height
-		lw $t4, water_col 		# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the region
-		
-		# Draw the Goal zone
-		addi $a0, $zero, 0		# Left corner x
-		addi $a1, $zero, 0		# Left corner y
-		addi $a2, $zero, 64		# width
-		addi $a3, $zero, 8		# height
-		lw $t4, goal_col 		# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the region
-		
-		# Draw the Vehicles onto the road:
-		
-		# 	Large Vehicle 1:
-		lw $a0, car_large_1_x		# Left corner x
-		lw $a1, car_large_1_y		# Left corner y
-		lw $a2, car_large_w			# width
-		lw $a3, car_large_h			# height
-		lw $t4, car_large_1_col 	# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the vehicle
-		
-		# 	Small Vehicle 1:
-		lw $a0, car_small_1_x		# Left corner x
-		lw $a1, car_small_1_y		# Left corner y
-		lw $a2, car_small_w			# width
-		lw $a3, car_small_h			# height
-		lw $t4, car_small_1_col 	# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the vehicle
-		
-		# 	Large Vehicle 2:
-		lw $a0, car_large_2_x		# Left corner x
-		lw $a1, car_large_2_y		# Left corner y
-		lw $a2, car_large_w			# width
-		lw $a3, car_large_h			# height
-		lw $t4, car_large_2_col 	# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the vehicle
-		
-		# 	Small Vehicle 2:
-		lw $a0, car_small_2_x		# Left corner x
-		lw $a1, car_small_2_y		# Left corner y
-		lw $a2, car_small_w			# width
-		lw $a3, car_small_h			# height
-		lw $t4, car_small_2_col 	# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the vehicle
-		
-		
-		# Draw the Logs
-		
-		# 	Log 1:
-		lw $a0, log_1_x				# Left corner x
-		lw $a1, log_1_y				# Left corner y
-		lw $a2, log_large_w			# width
-		lw $a3, log_large_h			# height
-		lw $t4, log_col_1 			# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the log
-
-		# 	Log 2:
-		lw $a0, log_2_x				# Left corner x
-		lw $a1, log_2_y				# Left corner y
-		lw $a2, log_large_w			# width
-		lw $a3, log_large_h			# height
-		lw $t4, log_col_1 			# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the log
+			# 	Log 2:
+			lw $a0, log_2_x				# Left corner x
+			lw $a1, log_2_y				# Left corner y
+			lw $a2, log_large_w			# width
+			lw $a3, log_large_h			# height
+			lw $t4, log_col_1 			# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
 			
-		# 	Log 3:
-		lw $a0, log_3_x				# Left corner x
-		lw $a1, log_3_y				# Left corner y
-		lw $a2, log_small_w			# width
-		lw $a3, log_small_h			# height
-		lw $t4, log_col_2 			# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the log
+			jal DRAW_RECT		# Draw the log
 			
-		# 	Log 4:
-		lw $a0, log_4_x				# Left corner x
-		lw $a1, log_4_y				# Left corner y
-		lw $a2, log_large_w			# width
-		lw $a3, log_large_h			# height
-		lw $t4, log_col_1 			# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
+			# 	Log 3:
+			lw $a0, log_3_x				# Left corner x
+			lw $a1, log_3_y				# Left corner y
+			lw $a2, log_small_w			# width
+			lw $a3, log_small_h			# height
+			lw $t4, log_col_2 			# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT		# Draw the log
+				
+			# 	Log 4:
+			lw $a0, log_4_x				# Left corner x
+			lw $a1, log_4_y				# Left corner y
+			lw $a2, log_large_w			# width
+			lw $a3, log_large_h			# height
+			lw $t4, log_col_1 			# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT		# Draw the log
+			
+			# Draw the Turtles:
+			
+			# 	Turtle 1
+			lw $a0, turtle_1_x				# Left corner x
+			lw $a1, turtle_1_y				# Left corner y
+			lw $a2, turtle_size			# width
+			lw $a3, turtle_size			# height
+			lw $t4, turtle_col 			# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT		# Draw the log
+			
+			# 	Turtle 2
+			lw $a0, turtle_2_x				# Left corner x
+			lw $a1, turtle_2_y				# Left corner y
+			lw $a2, turtle_size			# width
+			lw $a3, turtle_size			# height
+			lw $t4, turtle_col 			# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
 		
-		jal DRAW_RECT		# Draw the log
+			jal DRAW_RECT		# Draw the log
 		
-		# Draw the Turtles:
-		
-		# 	Turtle 1
-		lw $a0, turtle_1_x				# Left corner x
-		lw $a1, turtle_1_y				# Left corner y
-		lw $a2, turtle_size			# width
-		lw $a3, turtle_size			# height
-		lw $t4, turtle_col 			# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the log
-		
-		# 	Turtle 2
-		lw $a0, turtle_2_x				# Left corner x
-		lw $a1, turtle_2_y				# Left corner y
-		lw $a2, turtle_size			# width
-		lw $a3, turtle_size			# height
-		lw $t4, turtle_col 			# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the log
-		
-		# 	Turtle 3
-		lw $a0, turtle_3_x				# Left corner x
-		lw $a1, turtle_3_y				# Left corner y
-		lw $a2, turtle_size			# width
-		lw $a3, turtle_size			# height
-		lw $t4, turtle_col 			# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_RECT		# Draw the log
-		
-		# Draw the frog
-		lw $a0, frog_x			# Left corner x
-		lw $a1, frog_y			# Left corner y
-		addi $a2, $zero, 8		# width
-		addi $a3, $zero, 8		# height
-		lw $t4, frog_color 		# color
-		addi $sp, $sp, -4		
-		sw $t4, 0($sp)
-		
-		jal DRAW_FROG		# Draw the frog
-		
-		# DRAW ONTO THE BITMAP DISPLAY ----------------------------------------------------------------------------------------
-		
-		jal PAINT
-		
-		# SLEEP ----------------------------------------------------------------------------------------
-		li $v0, 32
-		li $a0, 16
-		syscall
-		# GO BACK TO THE BEGINNING ----------------------------------------------------------------------------------------
-		j game_loop_start 
+			# 	Turtle 3
+			lw $a0, turtle_3_x				# Left corner x
+			lw $a1, turtle_3_y				# Left corner y
+			lw $a2, turtle_size			# width
+			lw $a3, turtle_size			# height
+			lw $t4, turtle_col 			# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT		# Draw the log
+			
+			# Draw the frog
+			lw $a0, frog_x			# Left corner x
+			lw $a1, frog_y			# Left corner y
+			addi $a2, $zero, 8		# width
+			addi $a3, $zero, 8		# height
+			lw $t4, frog_color 		# color
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_FROG		# Draw the frog
+			
+			# DRAW ONTO THE BITMAP DISPLAY ----------------------------------------------------------------------------------------
+			
+			jal PAINT
+			
+			# SLEEP ----------------------------------------------------------------------------------------
+			li $v0, 32
+			li $a0, 2
+			syscall
+			
+			# GO BACK TO THE BEGINNING ----------------------------------------------------------------------------------------
+			j game_loop_start 
 		
 		game_loop_end:
 		 
@@ -382,16 +458,34 @@
 		# This is because the cars, logs and turtles only ever move horizontally.
 		
 		# Add the offset to x. (i.e. add a0 and a1 and store it in a0)
+		add $a0, $a0, $a1
 		
-		# Check if x (a0) is less than 0 or greater than 63:
+		# Check if x (a0) is less than 0:
+		bltz $a0, if_x_less_than_0
+		bge $a0, 63, else_if_x_greater_than_63
+		j end_if_x_less_than_0_or_greater_than_63
+		
+		if_x_less_than_0:
 		
 			# set x (a0) to 64 + x
+			addi $a0, $a0, 64
+			
+			j end_if_x_less_than_0_or_greater_than_63
 		
 		# Check if x (a0) is greater than 63:
-		
+		else_if_x_greater_than_63:
 			# set x (a0) to 64 - x
+			li $t1, 64
+			
+			sub $a0, $t1, $a0
+			
+		# End if
+		end_if_x_less_than_0_or_greater_than_63:
 		
 		# Write to memory 
+		sw $a0, 0($a2)
+		
+		jr $ra
 	
 	MOVE_FROG:
 		# This is a function used to update the frog's location.
@@ -468,11 +562,31 @@
 				# Stop when j == $a2
 				beq $t3, $a2, end_loop_across
 				
-				# Check if x + width is more than 64. If so, then subtract 256 from $s0
-				# Otherwise don't do anything
+				# Check if x + j is more than 63. If so, then subtract 256 from $s0
+				add $t6, $a0, $t3
 				
-				# Draw a pixel onto the screen.
+				bgt $t6, 63, move_up_a_row
+				j dont_move_up_a_row
+				
+				move_up_a_row:
+					 # Move up a row
+					addi $s0, $s0, -256
+					
+					# Draw a pixel onto the screen.
+					sw $t1, 0($s0)
+					
+					# Move back down:
+					addi $s0, $s0, 256
+					
+					# Jump down to the increment stage:
+					j increment
+					
+				dont_move_up_a_row:
+				
+				# Otherwise draw a pixel onto the same row.
 				sw $t1, 0($s0)
+				
+				increment:
 				# move one pixel 
 				addi $s0, $s0, 4
 				# Increment j 
@@ -485,8 +599,6 @@
 			addi $t4, $zero, 4
 			mult $a2, $t4
 			mflo $t4
-			
-			# If x + width is more than 64, then add 512 to $s0. Do some proofs to ensure correctness first.
 			
 			sub $s0, $s0, $t4
 			
