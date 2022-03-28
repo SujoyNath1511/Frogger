@@ -14,28 +14,27 @@
 #
 # Which milestone is reached in this submission?
 # (See the assignment handout for descriptions of the milestones)
-# - Milestone () 1/2/3/4/5 (choose the one the applies)
+# - Milestone (1)/2/3/4/5 (choose the one the applies)
 #
 # Which approved additional features have been implemented?
 # (See the assignment handout for the list of additional features)
 # 1. None
 #
 # Any additional information that the TA needs to know:
-# - Nothing yet.
+# - The program currently only terminates when you stop it in the Assembly runner. Otherwise it continues in an infinite loop.
+# 	This is because I still haven't implemented the collision detection which would result in the game to restart.
 #
 #####################################################################
-# Demo for painting
-#
-# Bitmap Display Configuration:
-# - Unit width in pixels: 8
-# - Unit height in pixels: 8
-# - Display width in pixels: 256
-# - Display height in pixels: 256
-# - Base Address for Display: 0x10008000 ($gp)
 #
 .data
 	# Display Address
 	displayAddress: .word 0x10008000
+	
+	# The Display Address does not have enough space for all of my pixels. Since memory is contiguous during assignment,
+	# according to a Piazza post, I decided to allocate extra space after the amount typically allocated for the display.
+	
+	# Extra memory for the display, plus a little extra.
+	extraMemory: .space 32772
 	
 	# Display Buffer
 	displayBuffer: .space 65536
@@ -435,12 +434,13 @@
 			jal DRAW_FROG		# Draw the frog
 			
 			# DRAW ONTO THE BITMAP DISPLAY ----------------------------------------------------------------------------------------
+			# jal CLEAR_SCREEN
 			
 			jal PAINT
 			
 			# SLEEP ----------------------------------------------------------------------------------------
 			li $v0, 32
-			li $a0, 2
+			li $a0, 10
 			syscall
 			
 			# GO BACK TO THE BEGINNING ----------------------------------------------------------------------------------------
@@ -510,7 +510,7 @@
 		x_less_than_0:
 			
 			# Set x to 0
-			addi $a0, $zero, $zero
+			add $a0, $zero, $zero
 			
 			j end_check_frog_x
 			
@@ -537,7 +537,7 @@
 		y_less_than_0:
 		
 			# Set y to 0
-			addi $a1, $zero, $zero
+			add $a1, $zero, $zero
 			
 			j end_check_frog_y
 		
@@ -786,7 +786,35 @@
 		# Return
 		jr $ra
 	
+#==== Clear the Screen =================================================================================================
 
+	CLEAR_SCREEN:
+		# This is a function used to clear the screen.
+		
+		# Initialize the counter:
+		add $t1, $zero, $zero
+		addi $t2, $zero, 65536
+		
+		# Set t3 to the color black or 0
+		add $t3, $zero, $zero
+		
+		clear_screen_loop:
+			# If the counter is equal to the end value, then exit the loop.
+			beq $t1, $t2, end_clear_screen_loop
+			
+			# Set address of displayAddress[i] to t5
+			add $t5, $t0, $t1
+			
+			# Store the value into the displayAddress[i]
+			sw $t3, 0($t5)
+			
+			# Increment the counter
+			addi $t1, $t1, 4
+			
+			j clear_screen_loop
+		end_clear_screen_loop:
+		
+		jr $ra
 
 #==== Exit the program =================================================================================================	
 	Exit:
