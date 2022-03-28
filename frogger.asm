@@ -23,6 +23,11 @@
 # Any additional information that the TA needs to know:
 # - The program currently only terminates when you stop it in the Assembly runner. Otherwise it continues in an infinite loop.
 # 	This is because I still haven't implemented the collision detection which would result in the game to restart.
+# 
+# - The displayAddress ($gp) allocates about 32768 bytes of memory. I need about 65536 bytes of memory for the display 
+#   (4 unit height * 64 columns)^2 = 256^2 = 65536. Thus, because memory is allocated contiguously in Assembly, I created a
+#   variable (extraMemory) that allocates extra space for the display to use. There is an 8 byte buffer between the display and 
+#   the next variable.
 #
 #####################################################################
 #
