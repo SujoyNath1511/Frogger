@@ -14,8 +14,9 @@
 #
 # Which milestone is reached in this submission?
 # (See the assignment handout for descriptions of the milestones)
-# - Milestone (1)/2/3/4/5 (choose the one the applies)
-#
+# - Milestone 1
+# - Milestone 2
+# 
 # Which approved additional features have been implemented?
 # (See the assignment handout for the list of additional features)
 # 1. None
@@ -161,7 +162,8 @@
 		
 		game_loop_start:
 		
-			# CHECK FOR KEYBOARD INPUT: ----------------------------------------------------------------------------------------
+			# CHECK FOR KEYBOARD INPUT AND UPDATE FROG POSITION: -------------------------------------------------------------------
+			jal CHECK_KEYBOARD 
 		
 			# UPDATE THE LOCATIONS OF ITEMS ----------------------------------------------------------------------------------------
 				
@@ -454,6 +456,74 @@
 		game_loop_end:
 		 
 		j Exit 
+#==== Check for Keyboard Input ===================================================================================================
+	CHECK_KEYBOARD:
+		# First load in the address where we see if a keystroke event occurred.
+		lw $t8, 0xffff0000
+		
+		# Set some preliminary values:
+		lw $a0, frog_x
+		lw $a1, frog_y
+		add $a2, $zero, $zero
+		add $a3, $zero, $zero
+		
+		# Check if a keyboard event occurred:
+		beq $t8, 0, end_keyboard_input
+		
+		# If we are here, that means a keyboard event occurred. Reset the keyboard.
+		# I use a2 because it is a register that has already been set to 0.
+		sw $a2, 0xffff0000
+		
+		keyboard_input:
+			# Move the frog according to the letter
+			lw $t2, 0xffff0004
+			beq $t2, 119, respond_to_W
+			beq $t2, 97, respond_to_A
+			beq $t2, 115, respond_to_S
+			beq $t2, 100, respond_to_D
+			j end_keyboard_input
+			
+			# Check if the letter pressed was 'w'
+			respond_to_W:
+				# Move forward
+				li $a3, -8
+				j end_keyboard_input
+			
+			# Check if the letter pressed was 'a'
+			respond_to_A:
+				# Move left
+				li $a2, -8
+				j end_keyboard_input
+				
+			# Check if the letter pressed was 's'
+			respond_to_S:
+				# Move backward
+				li $a3, 8
+				j end_keyboard_input
+			
+			# Check if the letter pressed was 'd'
+			respond_to_D:
+				# Move right
+				li $a2, 8
+		
+		end_keyboard_input:
+		
+		add $t2, $zero, $zero
+		
+		sw $t2, 0xffff0004
+		
+		# Save the value of the return address
+		add $s1, $zero, $ra
+		
+		# Move the frog:
+		jal MOVE_FROG
+		
+		# Return 
+		jr $s1
+		
+		
+		
+		
 
 #==== Update Item Locations ======================================================================================================
 	MOVE_RECT:
@@ -559,6 +629,9 @@
 		
 		# Store $a1 in frog_y
 		sw $a1, frog_y
+		
+		# Return
+		jr $ra
 		
 #==== Draw Items into the Buffer =================================================================================================	
 	DRAW_RECT:
