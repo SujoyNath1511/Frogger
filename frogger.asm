@@ -65,6 +65,7 @@
 	frog_x: .word 28  			# Store the frog x coordinate
 	frog_y: .word 56			# Store the frog's starting y coordinate.
 	frog_color: .word 0x29912e 	# Create a variable to store the frog's color
+	lives: .word 3
 	
 	#------------------------------------------------------------------------------------------------------------------
 	# VEHICLES
@@ -151,7 +152,14 @@
 	turtle_3_x: .word 24					# Store the turtle's x
 	turtle_3_y: .word 16					# Store the turtle's y
 	
-	
+	#--------------------------------------------------------------------------------------------------------------------
+	# OFFSET VALUES FOR MOVEMENT
+	#--------------------------------------------------------------------------------------------------------------------
+	log_row_1_offset: .word -1
+	log_row_2_offset: .word -1
+	turtle_row_offset: .word 1
+	car_row_1_offset: .word -1
+	car_row_2_offset: .word 1
 .text
 
 # MAIN Program =================================================================================================================
@@ -164,82 +172,253 @@
 		
 			# CHECK FOR KEYBOARD INPUT AND UPDATE FROG POSITION: -------------------------------------------------------------------
 			jal CHECK_KEYBOARD 
+			
+			# Load in the frog's values
+			lw $t1, frog_y
+			
+			# Check for collisions
+			beq $t1, 48, check_car_row_1
+			beq $t1, 40, check_car_row_2
+			beq $t1, 24, check_log_row_1
+			beq $t1, 16, check_turtle_row
+			beq $t1, 8, check_log_row_2
+			j end_collision_check
+			
+			check_car_row_1:
+				# 	Large Vehicle 1:
+				lw $a0, car_large_1_x		# Left corner x
+				lw $a1, car_large_1_y		# Left corner y
+				lw $a2, car_large_w			# width
+				lw $a3, car_large_h			# height
+			
+				jal DETECT_COLLISION		
+				
+				# If collision occurs, then call DEATH
+				beq $v0, 0, check_small_vehicle_1
+				jal DEATH
+				j end_collision_check
+				
+				check_small_vehicle_1:
+				
+				# 	Small Vehicle 1:
+				lw $a0, car_small_1_x		# Left corner x
+				lw $a1, car_small_1_y		# Left corner y
+				lw $a2, car_small_w			# width
+				lw $a3, car_small_h			# height
+			
+				jal DETECT_COLLISION
+				
+				# Leave if there has been no collision
+				beq $v0, 0, end_collision_check		
+				
+				# Otherwise, call DEATH
+				jal DEATH
+			
+				j end_collision_check
+				
+			check_car_row_2:
+				# 	Large Vehicle 2:
+				lw $a0, car_large_2_x		# Left corner x
+				lw $a1, car_large_2_y		# Left corner y
+				lw $a2, car_large_w			# width
+				lw $a3, car_large_h			# height
+		
+				jal DETECT_COLLISION		
+				
+				# If collision does not occur, check the second vehicle
+				beq $v0, 0, check_small_vehicle_2
+				jal DEATH
+				j end_collision_check
+				
+				check_small_vehicle_2:
+				# 	Small Vehicle 2:
+				lw $a0, car_small_2_x		# Left corner x
+				lw $a1, car_small_2_y		# Left corner y
+				lw $a2, car_small_w			# width
+				lw $a3, car_small_h			# height
+		
+				jal DETECT_COLLISION		
+			
+				# Leave if there has been no collision
+				beq $v0, 0, end_collision_check		
+				
+				# Otherwise, call DEATH
+				jal DEATH
+			
+				j end_collision_check
+			
+			check_log_row_1:
+				# 	Log 1:
+				lw $a0, log_1_x				# Left corner x
+				lw $a1, log_1_y				# Left corner y
+				lw $a2, log_large_w			# width
+				lw $a3, log_large_h			# height
+			
+				jal DETECT_COLLISION		
+				
+				# If collision is false, then check on the second log
+				beq $v0, 0, check_log_2
+				jal MOVING_PLATFORM			# Otherwise call moving platform
+				j end_collision_check
+				
+				check_log_2:
+				# 	Log 2:
+				lw $a0, log_2_x				# Left corner x
+				lw $a1, log_2_y				# Left corner y
+				lw $a2, log_large_w			# width
+				lw $a3, log_large_h			# height
+			
+				jal DETECT_COLLISION		
+				
+				jal MOVING_PLATFORM
+				
+				j end_collision_check
+			
+			check_turtle_row:
+				# 	Turtle 1
+				lw $a0, turtle_1_x				# Left corner x
+				lw $a1, turtle_1_y				# Left corner y
+				lw $a2, turtle_size			# width
+				lw $a3, turtle_size			# height
+			
+				jal DETECT_COLLISION		
+				
+				# If collision is false, check on the next turtle
+				beq $v0, 0, check_turtle_2
+				jal MOVING_PLATFORM			# Otherwise call moving platform
+				j end_collision_check
+				
+				check_turtle_2:
+				# 	Turtle 2
+				lw $a0, turtle_2_x				# Left corner x
+				lw $a1, turtle_2_y				# Left corner y
+				lw $a2, turtle_size			# width
+				lw $a3, turtle_size			# height
+		
+				jal DETECT_COLLISION		
+				
+				# If collision is false, check on the next turtle
+				beq $v0, 0, check_turtle_3
+				jal MOVING_PLATFORM			# Otherwise call moving platform
+				j end_collision_check
+				
+				check_turtle_3:
+				# 	Turtle 3
+				lw $a0, turtle_3_x				# Left corner x
+				lw $a1, turtle_3_y				# Left corner y
+				lw $a2, turtle_size			# width
+				lw $a3, turtle_size			# height
+			
+				jal DETECT_COLLISION	
+				
+				jal MOVING_PLATFORM	
+			
+				j end_collision_check
+			
+			check_log_row_2:
+				# 	Log 3:
+				lw $a0, log_3_x				# Left corner x
+				lw $a1, log_3_y				# Left corner y
+				lw $a2, log_small_w			# width
+				lw $a3, log_small_h			# height
+			
+				jal DETECT_COLLISION		
+				
+				# If collision is false, then check the next log
+				beq $v0, 0, check_log_4
+				jal MOVING_PLATFORM
+				j end_collision_check
+				
+				check_log_4:
+				# 	Log 4:
+				lw $a0, log_4_x				# Left corner x
+				lw $a1, log_4_y				# Left corner y
+				lw $a2, log_large_w			# width
+				lw $a3, log_large_h			# height
+			
+				jal DETECT_COLLISION
+				
+				jal MOVING_PLATFORM
+			
+			end_collision_check:
+			
+			
 		
 			# UPDATE THE LOCATIONS OF ITEMS ----------------------------------------------------------------------------------------
 				
 			# Move Car Large 1:
 			lw $a0, car_large_1_x 
-			li $a1, -1
+			lw $a1, car_row_1_offset
 			la $a2, car_large_1_x
 				
 			jal MOVE_RECT 
 			
 			# Move Car Large 2:
 			lw $a0, car_large_2_x 
-			li $a1, 1
+			lw $a1, car_row_2_offset
 			la $a2, car_large_2_x
 				
 			jal MOVE_RECT
 			
 			# Move Car Small 1:
 			lw $a0, car_small_1_x 
-			li $a1, -1
+			lw $a1, car_row_1_offset
 			la $a2, car_small_1_x
 				
 			jal MOVE_RECT
 			
 			# Move Car Small 2:
 			lw $a0, car_small_2_x 
-			li $a1, 1
+			lw $a1, car_row_2_offset
 			la $a2, car_small_2_x
 				
 			jal MOVE_RECT
 			
 			# Move Log 1:
 			lw $a0, log_1_x 
-			li $a1, -1
+			lw $a1, log_row_1_offset
 			la $a2, log_1_x
 				
 			jal MOVE_RECT
 			
 			# Move Log 2:
 			lw $a0, log_2_x 
-			li $a1, -1
+			lw $a1, log_row_1_offset
 			la $a2, log_2_x
 				
 			jal MOVE_RECT
 			
 			# Move Log 3:
 			lw $a0, log_3_x 
-			li $a1, -1
+			lw $a1, log_row_2_offset
 			la $a2, log_3_x
 				
 			jal MOVE_RECT
 			
 			# Move Log 4:
 			lw $a0, log_4_x 
-			li $a1, -1
+			lw $a1, log_row_2_offset
 			la $a2, log_4_x
 				
 			jal MOVE_RECT
 			
 			# Move Turtle 1:
 			lw $a0, turtle_1_x 
-			li $a1, 1
+			lw $a1, turtle_row_offset
 			la $a2, turtle_1_x
 				
 			jal MOVE_RECT
 			
 			# Move Turtle 2:
 			lw $a0, turtle_2_x 
-			li $a1, 1
+			lw $a1, turtle_row_offset
 			la $a2, turtle_2_x
 				
 			jal MOVE_RECT
 			
 			# Move Turtle 3:
 			lw $a0, turtle_3_x 
-			li $a1, 1
+			lw $a1, turtle_row_offset
 			la $a2, turtle_3_x
 				
 			jal MOVE_RECT
@@ -522,8 +701,64 @@
 		jr $s1
 		
 		
+#==== Check for Collision ========================================================================================================
+	DETECT_COLLISION:
+		# Collision is always detected between the frog and an element onto the screen. Thus here are the registers:
+		# a0 is the x coordinate of the rectangle. a1 is the y coordinate of the rectangle. a2 is the width of the rectangle
+		# a3 is the height of the rectangle. 
 		
+		# Set a2 to store the right end of the rectangle (a2 = a0 + a2)
+		add $a2, $a0, $a2
 		
+		# Set a3 to store the bottom of the rectangle (a3 = a1 + a3)
+		add $a3, $a1, $a3
+		
+		# Set t1 = frog_x, t2 = frog_y
+		lw $t1, frog_x
+		lw $t2, frog_y
+		
+		# Set s1 to be the return address (s1 = ra)
+		add $s1, $zero, $ra
+		
+		# Call CHECK_OVERLAP
+		jal CHECK_OVERLAP
+		
+		# If v0 is 1, return.
+		beq $v0, 1, return_collision
+		
+		# Otherwise do the rest.
+		
+		# Set t1 = frog_x + 8, t2 = frog_y + 8
+		addi $t1, $t1, 8
+		addi $t2, $t2, 8
+		
+		# Call CHECK_OVERLAP
+		jal CHECK_OVERLAP
+		
+		return_collision:
+		
+		# return using s1.
+		jr $s1
+
+	CHECK_OVERLAP:
+		# Check t1 >= a0
+		sge $t3, $t1, $a0
+		
+		# Check t1 <= a2
+		sle $t4, $t1, $a2
+		
+		# Check t2 >= a1
+		sge $t5, $t2, $a1
+		
+		# Check t2 <= a3
+		sle $t6, $t2, $a3
+		
+		# AND all four statements and store the result in v0.
+		and $v0, $t3, $t4
+		and $v0, $v0, $t5
+		and $v0, $v0, $t6
+		
+		jr $ra
 
 #==== Update Item Locations ======================================================================================================
 	MOVE_RECT:
@@ -632,6 +867,71 @@
 		
 		# Return
 		jr $ra
+#==== Death ======================================================================================================================
+	DEATH:
+		# This is the function called when the frog dies.
+		
+		# Reduce the number of lives.
+		lw $t1, lives
+		addi $t1, $t1, -1
+		sw $t1, lives
+		
+		# Reset the frog position.
+		li $t1, 28
+		li $t2, 56
+		sw $t1, frog_x
+		sw $t2, frog_y
+		
+		# Return
+		jr $ra
+
+#==== MOVING PLATFORM ==============================================================================================================
+	MOVING_PLATFORM:
+		# s1 is the return address to the main function. v0 tells us whether a collision occurred or not.
+		add $s1, $zero, $ra
+		
+		# Check if a collision occurred.
+		beq $v0, 1, move_frog
+		j kill_frog
+		
+		move_frog:
+		# If true, then call MOVE_FROG and set the x offset based on the row the frog is on.
+		
+			# Set up the arguments:
+			lw $a0, frog_x
+			lw $a1, frog_y
+			li $a3, 0
+			
+			# Move base on row
+			beq $a1, 24, log_row_1_shift
+			beq $a1, 16, turtle_row_shift
+			beq $a1, 8, log_row_2_shift
+			 
+			log_row_1_shift:
+				lw $a2, log_row_1_offset
+				j end_set_x_offset 
+				
+			turtle_row_shift:
+				lw $a2, turtle_row_offset
+				j end_set_x_offset
+			
+			log_row_2_shift:
+				lw $a2, log_row_2_offset
+			
+			end_set_x_offset:
+				
+			jal MOVE_FROG
+			j return_to_main
+			
+		kill_frog:
+		# If false, call DEATH.
+			jal DEATH
+			j return_to_main
+		
+		return_to_main:
+		# return to the calling function using s1
+		
+		jr $s1
 		
 #==== Draw Items into the Buffer =================================================================================================	
 	DRAW_RECT:
