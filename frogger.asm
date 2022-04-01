@@ -619,6 +619,9 @@
 			
 			jal DRAW_FROG		# Draw the frog
 			
+			# Draw the number of lives onto the screen:
+			jal DRAW_LIVES
+			
 			# DRAW ONTO THE BITMAP DISPLAY ----------------------------------------------------------------------------------------
 			# jal CLEAR_SCREEN
 			
@@ -1128,6 +1131,50 @@
 		
 		# Return
 		jr $ra
+	
+	DRAW_LIVES:
+		# This function for drawing the lives as bars onto the screen.
+		
+		# Set s1 to the return address.
+		add $s1, $zero, $ra
+		
+		# Set a0 to be the starting location.
+		li $a0, 49
+		# Set s2 to be 0
+		li $s2, 0
+		# Set a1 to be 0, as the starting y for the rectangle
+		li $a1, 0
+		# set a2 to be 2.
+		li $a2, 2
+		# Set a3 to be 3.
+		li $a3, 3
+		
+		# Store in the value of lives.
+		lw $s3, lives
+		
+		li $s4, 3
+		
+		# Run a loop where you call DRAW_RECT.
+		draw_lives_loop:
+		# Exit loop when t1 is equal to lives
+			beq $s2, $s3, end_draw_lives_loop
+			
+			add $a0, $a0, $s4
+			
+			li $s5, 0xffffff 		# color
+			addi $sp, $sp, -4		
+			sw $s5, 0($sp)
+			
+			jal DRAW_RECT
+			
+			addi $s2, $s2, 1
+			
+			j draw_lives_loop
+		end_draw_lives_loop:
+		
+		jr $s1
+		
+		
 	
 #==== Draw onto the Bitmap Display =====================================================================================
 	
