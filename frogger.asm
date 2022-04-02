@@ -85,7 +85,7 @@
 	car_large_1_col: .word 0x000000 	# The color of the car 
 	
 	# Vehicle Large 2
-	car_large_2_x: .word 16				# Store the large car's x coordinate
+	car_large_2_x: .word 8				# Store the large car's x coordinate
 	car_large_2_y: .word 40				# Store the large car's y coordinate
 	car_large_2_col: .word 0x000000 	# The color of the car  
 	
@@ -155,11 +155,11 @@
 	#--------------------------------------------------------------------------------------------------------------------
 	# OFFSET VALUES FOR MOVEMENT
 	#--------------------------------------------------------------------------------------------------------------------
-	log_row_1_offset: .word -1
-	log_row_2_offset: .word -1
+	log_row_1_offset: .word -2
+	log_row_2_offset: .word -2
 	turtle_row_offset: .word 1
 	car_row_1_offset: .word -1
-	car_row_2_offset: .word 1
+	car_row_2_offset: .word 2
 .text
 
 # MAIN Program =================================================================================================================
@@ -167,6 +167,54 @@
 		# INTIALIZE ALL THE VARIABLES:
 		lw $t0, displayAddress # $t0 stores the base address for display
 		la $s0, displayBuffer  # $s0 stores the base address for the buffer.
+		
+		# Set the sizes for the logs and cars: (Randomize size of logs and cars)
+		li $v0, 42
+		li $a0, 0
+		
+		# Randomize the size of large car (Range is 16 to 24)
+		li $a1, 8
+		syscall
+		add $a0, $a0, 16
+		sw $a0, car_large_w
+		
+		# Randomize the size of small car (Range is 8 to 12)
+		li $a1, 4
+		syscall
+		add $a0, $a0, 8
+		sw $a0, car_small_w
+		
+		# Randomize the size of large log
+		li $a1, 6
+		syscall
+		add $a0, $a0, 18
+		sw $a0, log_large_w
+		
+		# Randomize the size of small log
+		li $a1, 8
+		syscall
+		add $a0, $a0, 8
+		sw $a0, log_small_w
+		
+		# Randomize the color of small car 1
+		li $a1, 127
+		syscall
+		sw $a0, car_small_1_col
+		
+		# Randomize the color of small car 2
+		li $a1, 127
+		syscall
+		sw $a0, car_small_2_col
+		
+		# Randomize the color of large car 1
+		li $a1, 127
+		syscall
+		sw $a0, car_large_1_col
+		
+		# Randomize the color of large car 2
+		li $a1, 127
+		syscall
+		sw $a0, car_large_2_col
 		
 		game_loop_start:
 		
@@ -629,7 +677,7 @@
 			
 			# SLEEP ----------------------------------------------------------------------------------------
 			li $v0, 32
-			li $a0, 10
+			li $a0, 12
 			syscall
 			
 			# GO BACK TO THE BEGINNING ----------------------------------------------------------------------------------------
@@ -1157,7 +1205,7 @@
 		# Run a loop where you call DRAW_RECT.
 		draw_lives_loop:
 		# Exit loop when t1 is equal to lives
-			beq $s2, $s3, end_draw_lives_loop
+			bge $s2, $s3, end_draw_lives_loop
 			
 			add $a0, $a0, $s4
 			
