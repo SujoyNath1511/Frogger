@@ -16,6 +16,9 @@
 # (See the assignment handout for descriptions of the milestones)
 # - Milestone 1
 # - Milestone 2
+# - Milestone 3 (Mostly)
+# - Milestone 4
+# - 
 # 
 # Which approved additional features have been implemented?
 # (See the assignment handout for the list of additional features)
@@ -66,7 +69,7 @@
 	frog_y: .word 56			# Store the frog's starting y coordinate.
 	frog_color: .word 0x29912e 	# Create a variable to store the frog's color
 	lives: .word 3
-	
+	last_command: .word 119 	# Set the last command to W at the start.
 	#------------------------------------------------------------------------------------------------------------------
 	# VEHICLES
 	#------------------------------------------------------------------------------------------------------------------
@@ -160,6 +163,7 @@
 	turtle_row_offset: .word 1
 	car_row_1_offset: .word -1
 	car_row_2_offset: .word 2
+	
 .text
 
 # MAIN Program =================================================================================================================
@@ -715,24 +719,36 @@
 			
 			# Check if the letter pressed was 'w'
 			respond_to_W:
+				# Store the last command:
+				sw $t2, last_command 
+				
 				# Move forward
 				li $a3, -8
 				j end_keyboard_input
 			
 			# Check if the letter pressed was 'a'
 			respond_to_A:
+				# Store the last command:
+				sw $t2, last_command 
+				
 				# Move left
 				li $a2, -8
 				j end_keyboard_input
 				
 			# Check if the letter pressed was 's'
 			respond_to_S:
+				# Store the last command:
+				sw $t2, last_command 
+				
 				# Move backward
 				li $a3, 8
 				j end_keyboard_input
 			
 			# Check if the letter pressed was 'd'
 			respond_to_D:
+				# Store the last command:
+				sw $t2, last_command 
+				
 				# Move right
 				li $a2, 8
 		
@@ -1083,6 +1099,9 @@
 		# Set the start of drawing:
 		la $s0, displayBuffer
 		
+		# Store the return address
+		add $s1, $zero, $ra
+		
 		# Set x
 		addi $t1, $zero, 4
 		mult $a0, $t1
@@ -1102,6 +1121,33 @@
 		
 		# move stack pointer a word.
 		addi $sp, $sp, 4
+		
+		# Draw the frog according to the last command
+		lw $t2, last_command
+		beq $t2, 119, draw_for_W
+		beq $t2, 97, draw_for_A
+		beq $t2, 115, draw_for_S
+		beq $t2, 100, draw_for_D
+		
+		draw_for_W:
+			jal DRAW_FROG_FORWARD
+			j end_draw_frog
+		draw_for_A:
+			jal DRAW_FROG_LEFT
+			j end_draw_frog
+		draw_for_S:
+			jal DRAW_FROG_DOWN
+			j end_draw_frog
+		draw_for_D:
+			jal DRAW_FROG_RIGHT
+			j end_draw_frog
+			
+		end_draw_frog:
+		
+		# Return
+		jr $s1
+	
+	DRAW_FROG_FORWARD:
 		
 		# Draw row 0 ---------------------------------------------------------
 		sw $t1, 0($s0)
@@ -1177,7 +1223,331 @@
 		# Go to the next row:
 		addi $s0, $s0, 256
 		
-		# Return
+		# Return to the calling function.
+		jr $ra
+	
+	DRAW_FROG_LEFT:
+		# Draw row 0 ---------------------------------------------------------
+		sw $t1, 0($s0)
+		sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+			
+		# Draw row 1 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		sw $t1, 28($s0)
+	
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 2 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 3 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 4 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+			
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 5 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 6 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 7 ---------------------------------------------------------
+		sw $t1, 0($s0)
+		sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Return to the calling function.
+		jr $ra
+	
+	DRAW_FROG_RIGHT:
+		# Draw row 0 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		sw $t1, 24($s0)
+		sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+			
+		# Draw row 1 ---------------------------------------------------------
+		sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+	
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 2 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 3 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 4 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+			
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 5 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 6 ---------------------------------------------------------
+		sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 7 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		sw $t1, 24($s0)
+		sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Return to the calling function.
+		jr $ra
+	
+	DRAW_FROG_DOWN:
+		# Draw row 0 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		sw $t1, 4($s0)
+		#sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		#sw $t1, 20($s0)
+		sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+			
+		# Draw row 1 ---------------------------------------------------------
+		sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		#sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		#sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		sw $t1, 28($s0)
+	
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 2 ---------------------------------------------------------
+		sw $t1, 0($s0)
+		sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		sw $t1, 24($s0)
+		sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 3 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 4 ---------------------------------------------------------
+		#sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		#sw $t1, 28($s0)
+			
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 5 ---------------------------------------------------------
+		sw $t1, 0($s0)
+		sw $t1, 4($s0)
+		sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		sw $t1, 20($s0)
+		sw $t1, 24($s0)
+		sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 6 ---------------------------------------------------------
+		sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		#sw $t1, 8($s0)
+		sw $t1, 12($s0)
+		sw $t1, 16($s0)
+		#sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Draw row 7 ---------------------------------------------------------
+		sw $t1, 0($s0)
+		#sw $t1, 4($s0)
+		#sw $t1, 8($s0)
+		#sw $t1, 12($s0)
+		#sw $t1, 16($s0)
+		#sw $t1, 20($s0)
+		#sw $t1, 24($s0)
+		sw $t1, 28($s0)
+		
+		# Go to the next row:
+		addi $s0, $s0, 256
+		
+		# Return to the calling function.
 		jr $ra
 	
 	DRAW_LIVES:
@@ -1257,36 +1627,6 @@
 		end_buffer_to_screen:
 		
 		# Return
-		jr $ra
-	
-#==== Clear the Screen =================================================================================================
-
-	CLEAR_SCREEN:
-		# This is a function used to clear the screen.
-		
-		# Initialize the counter:
-		add $t1, $zero, $zero
-		addi $t2, $zero, 65536
-		
-		# Set t3 to the color black or 0
-		add $t3, $zero, $zero
-		
-		clear_screen_loop:
-			# If the counter is equal to the end value, then exit the loop.
-			beq $t1, $t2, end_clear_screen_loop
-			
-			# Set address of displayAddress[i] to t5
-			add $t5, $t0, $t1
-			
-			# Store the value into the displayAddress[i]
-			sw $t3, 0($t5)
-			
-			# Increment the counter
-			addi $t1, $t1, 4
-			
-			j clear_screen_loop
-		end_clear_screen_loop:
-		
 		jr $ra
 
 #==== Exit the program =================================================================================================	
