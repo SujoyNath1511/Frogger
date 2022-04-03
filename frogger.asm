@@ -155,14 +155,14 @@
 	turtle_3_x: .word 24					# Store the turtle's x
 	turtle_3_y: .word 16					# Store the turtle's y
 	
-	#--------------------------------------------------------------------------------------------------------------------
-	# OFFSET VALUES FOR MOVEMENT
-	#--------------------------------------------------------------------------------------------------------------------
-	log_row_1_offset: .word -2
-	log_row_2_offset: .word -2
-	turtle_row_offset: .word 1
-	car_row_1_offset: .word -1
-	car_row_2_offset: .word 2
+	#---------------------------------------------------------------------------------------------------------------------
+	# COUNTERS TO HELP SLOW DOWN THE MOVEMENTS
+	#---------------------------------------------------------------------------------------------------------------------
+	car_row_1_delay: .word 4				# Update every 4 frames
+	car_row_2_delay: .word 2				# Update every 2 frames
+	log_row_1_delay: .word 5				# Update every 5 frames
+	log_row_2_delay: .word 2				# Update every 2 frames
+	turtle_row_delay: .word 3				# Update every 3 frames
 	
 .text
 
@@ -397,83 +397,139 @@
 			
 		
 			# UPDATE THE LOCATIONS OF ITEMS ----------------------------------------------------------------------------------------
-				
-			# Move Car Large 1:
-			lw $a0, car_large_1_x 
-			lw $a1, car_row_1_offset
-			la $a2, car_large_1_x
-				
-			jal MOVE_RECT 
 			
-			# Move Car Large 2:
-			lw $a0, car_large_2_x 
-			lw $a1, car_row_2_offset
-			la $a2, car_large_2_x
-				
-			jal MOVE_RECT
+			# Check the counter for row 1 first
+			lw $t1, car_row_1_delay
 			
-			# Move Car Small 1:
-			lw $a0, car_small_1_x 
-			lw $a1, car_row_1_offset
-			la $a2, car_small_1_x
-				
-			jal MOVE_RECT
+			bgtz $t1, move_car_row_2		# Move on to car row 2 if we shouldn't update this one yet.
 			
-			# Move Car Small 2:
-			lw $a0, car_small_2_x 
-			lw $a1, car_row_2_offset
-			la $a2, car_small_2_x
+				# Move Car Large 1:
+				lw $a0, car_large_1_x 
+				li $a1, -1
+				la $a2, car_large_1_x
 				
-			jal MOVE_RECT
+				jal MOVE_RECT
 			
-			# Move Log 1:
-			lw $a0, log_1_x 
-			lw $a1, log_row_1_offset
-			la $a2, log_1_x
+				# Move Car Small 1:
+				lw $a0, car_small_1_x 
+				li $a1, -1
+				la $a2, car_small_1_x
 				
-			jal MOVE_RECT
+				jal MOVE_RECT 
+				
+				# Since we updated row 1, we should reset the counter.
+				li $t1, 5
+				
+				sw $t1, car_row_1_delay		# Set it to 1 more than expected cause we subtract 1 at the end of the game loop.
+				
 			
-			# Move Log 2:
-			lw $a0, log_2_x 
-			lw $a1, log_row_1_offset
-			la $a2, log_2_x
-				
-			jal MOVE_RECT
+			move_car_row_2:
 			
-			# Move Log 3:
-			lw $a0, log_3_x 
-			lw $a1, log_row_2_offset
-			la $a2, log_3_x
-				
-			jal MOVE_RECT
+			lw $t1, car_row_2_delay
 			
-			# Move Log 4:
-			lw $a0, log_4_x 
-			lw $a1, log_row_2_offset
-			la $a2, log_4_x
-				
-			jal MOVE_RECT
+			bgtz $t1, move_log_row_1 
 			
-			# Move Turtle 1:
-			lw $a0, turtle_1_x 
-			lw $a1, turtle_row_offset
-			la $a2, turtle_1_x
+				# Move Car Large 2:
+				lw $a0, car_large_2_x 
+				li $a1, 1
+				la $a2, car_large_2_x
 				
-			jal MOVE_RECT
+				jal MOVE_RECT
 			
-			# Move Turtle 2:
-			lw $a0, turtle_2_x 
-			lw $a1, turtle_row_offset
-			la $a2, turtle_2_x
-				
-			jal MOVE_RECT
 			
-			# Move Turtle 3:
-			lw $a0, turtle_3_x 
-			lw $a1, turtle_row_offset
-			la $a2, turtle_3_x
+				# Move Car Small 2:
+				lw $a0, car_small_2_x 
+				li $a1, 1
+				la $a2, car_small_2_x
 				
-			jal MOVE_RECT
+				jal MOVE_RECT
+				
+				# Since we updated row 1, we should reset the counter.
+				li $t1, 3
+				
+				sw $t1, car_row_2_delay		# Set it to 1 more than expected cause we subtract 1 at the end of the game loop.
+			
+			move_log_row_1:
+			
+			lw $t1, log_row_1_delay			
+			bgtz $t1, move_log_row_2 
+			
+				# Move Log 1:
+				lw $a0, log_1_x 
+				li $a1, -1
+				la $a2, log_1_x
+				
+				jal MOVE_RECT
+			
+				# Move Log 2:
+				lw $a0, log_2_x 
+				li $a1, -1
+				la $a2, log_2_x
+				
+				jal MOVE_RECT
+				
+				# Since we updated row 1, we should reset the counter.
+				li $t1, 6
+				
+				sw $t1, log_row_1_delay		# Set it to 1 more than expected cause we subtract 1 at the end of the game loop.
+			
+			move_log_row_2:
+			
+			lw $t1, log_row_2_delay			
+			bgtz $t1, move_turtle_row
+			
+				# Move Log 3:
+				lw $a0, log_3_x 
+				li $a1, -1
+				la $a2, log_3_x
+				
+				jal MOVE_RECT
+			
+				# Move Log 4:
+				lw $a0, log_4_x 
+				li $a1, -1
+				la $a2, log_4_x
+				
+				jal MOVE_RECT
+				
+				# Since we updated row 1, we should reset the counter.
+				li $t1, 3
+				
+				sw $t1, log_row_2_delay		# Set it to 1 more than expected cause we subtract 1 at the end of the game loop.
+			
+			move_turtle_row:
+			
+			lw $t1, turtle_row_delay			
+			bgtz $t1, end_update_elements
+			
+				# Move Turtle 1:
+				lw $a0, turtle_1_x 
+				li $a1, 1
+				la $a2, turtle_1_x
+				
+				jal MOVE_RECT
+			
+				# Move Turtle 2:
+				lw $a0, turtle_2_x 
+				li $a1, 1
+				la $a2, turtle_2_x
+				
+				jal MOVE_RECT
+			
+				# Move Turtle 3:
+				lw $a0, turtle_3_x 
+				li $a1, 1
+				la $a2, turtle_3_x
+				
+				jal MOVE_RECT
+				
+				# Since we updated row 1, we should reset the counter.
+				li $t1, 4
+				
+				sw $t1, turtle_row_delay		# Set it to 1 more than expected cause we subtract 1 at the end of the game loop.
+			
+			end_update_elements:
+			
 		
 			# REDRAW THE SCREEN INTO THE BUFFER ----------------------------------------------------------------------------------------
 		
@@ -678,6 +734,33 @@
 			# jal CLEAR_SCREEN
 			
 			jal PAINT
+			
+			# Update all the counters:
+			
+			# Car Row 1
+			lw $t1, car_row_1_delay
+			addi $t1, $t1, -1
+			sw $t1, car_row_1_delay
+			
+			# Car Row 2
+			lw $t1, car_row_2_delay
+			addi $t1, $t1, -1
+			sw $t1, car_row_2_delay
+			
+			# Log Row 1
+			lw $t1, log_row_1_delay
+			addi $t1, $t1, -1
+			sw $t1, log_row_1_delay
+			
+			# Log Row 2
+			lw $t1, log_row_2_delay
+			addi $t1, $t1, -1
+			sw $t1, log_row_2_delay
+			
+			# Turtle Row 
+			lw $t1, turtle_row_delay
+			addi $t1, $t1, -1
+			sw $t1, turtle_row_delay
 			
 			# SLEEP ----------------------------------------------------------------------------------------
 			li $v0, 32
@@ -967,6 +1050,7 @@
 			# Set up the arguments:
 			lw $a0, frog_x
 			lw $a1, frog_y
+			li $a2, 0
 			li $a3, 0
 			
 			# Move base on row
@@ -975,18 +1059,25 @@
 			beq $a1, 8, log_row_2_shift
 			 
 			log_row_1_shift:
-				lw $a2, log_row_1_offset
+				
+				lw $t6, log_row_1_delay		# Check the delay counter
+				bgtz $t6, end_set_x_offset	# Do not move the frog if the delay is greater than 0 still.
+				li $a2, -1
 				j end_set_x_offset 
 				
 			turtle_row_shift:
-				lw $a2, turtle_row_offset
+				lw $t6, turtle_row_delay		# Check the delay counter
+				bgtz $t6, end_set_x_offset	# Do not move the frog if the delay is greater than 0 still.
+				li $a2, 1
 				j end_set_x_offset
 			
 			log_row_2_shift:
-				lw $a2, log_row_2_offset
+				lw $t6, log_row_2_delay		# Check the delay counter
+				bgtz $t6, end_set_x_offset	# Do not move the frog if the delay is greater than 0 still
+				li $a2, -1
 			
 			end_set_x_offset:
-				
+			
 			jal MOVE_FROG
 			j return_to_main
 			
