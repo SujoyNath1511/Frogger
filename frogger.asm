@@ -18,7 +18,7 @@
 # - Milestone 2 (Done)
 # - Milestone 3 (Done)
 # - Milestone 4 (Done)
-# - Milestone 5 (in progress)
+# - Milestone 5 (Done)
 # 
 # Which approved additional features have been implemented?
 # (See the assignment handout for the list of additional features)
@@ -27,7 +27,7 @@
 # 3. (Easy) Have objects in different rows move at different speeds
 # 4. (Easy) Randomize the size and appearance of the logs and cars
 # 5. (Easy) Make the frog point in the direction that it's traveling
-# 6. (Hard) Add powerups to scene (extra lives (in progress))
+# 6. (Hard) Add powerups to scene (extra lives and time freeze)
 #
 # Any additional information that the TA needs to know:
 # - The program currently only terminates when you stop it in the Assembly runner. Otherwise it continues in an infinite loop.
@@ -40,6 +40,8 @@
 # 
 # - Sometimes it might look like the frogger should be dead when most of it is in the water, however it remains alive because part of it
 #   is above the water, colliding with a log or turtle. 
+#
+# - The white box in the safe zone is the extra life, and the blue box is the time stop.
 #
 #####################################################################
 #
@@ -189,6 +191,10 @@
 	dynamic_diff_counter: .word 60
 	
 	#---------------------------------------------------------------------------------------------------------------------
+	# SHOW POWERUPS
+	#---------------------------------------------------------------------------------------------------------------------
+	show_extra_life: .word 1			# Whether to display the extra life power up
+	show_time_freeze: .word 1			# Whether to display the time freeze power up
 	#---------------------------------------------------------------------------------------------------------------------
 	
 	
@@ -290,6 +296,7 @@
 			# Check for collisions
 			beq $t1, 48, check_car_row_1
 			beq $t1, 40, check_car_row_2
+			beq $t1, 32, check_power_up
 			beq $t1, 24, check_log_row_1
 			beq $t1, 16, check_turtle_row
 			beq $t1, 8, check_log_row_2
@@ -529,6 +536,39 @@
 				li $t2, 56
 				sw $t1, frog_x
 				sw $t2, frog_y
+				j end_collision_check		# End the collision check
+			
+			check_power_up:
+				lw $t1, show_extra_life
+				
+				beqz $t1, check_for_time_freeze
+				# This is the check if a power up has been picked up:
+				# check for extra life 
+				li $a0, 8				# Left corner x
+				li $a1, 32				# Left corner y
+				li $a2, 8			# width
+				li $a3, 8			# height
+				
+				jal DETECT_COLLISION
+				
+				beqz $v0, check_for_time_freeze
+				jal ADD_LIVES
+				j end_collision_check
+				
+				check_for_time_freeze:
+				lw $t1, show_time_freeze
+				
+				beqz $t1, end_collision_check
+				# check for time freeze
+				li $a0, 44				# Left corner x
+				li $a1, 32				# Left corner y
+				li $a2, 8			# width
+				li $a3, 8			# height
+				
+				jal DETECT_COLLISION
+				
+				beqz $v0, end_collision_check
+				jal STOP_TIME
 			
 			end_collision_check:
 			
@@ -896,6 +936,38 @@
 			
 			jal DRAW_RECT
 			
+			# Draw the extra life power up if show_extra_life is 1
+			lw $t1, show_extra_life
+			
+			beqz $t1, draw_time_freeze
+				# Set up the parameters for drawing the extra life block
+				li $a0, 10
+				li $a1, 34
+				li $a2, 4
+				li $a3, 4
+				li $t4, 0xf0ede6
+				addi $sp, $sp, -4		
+				sw $t4, 0($sp)
+			
+				jal DRAW_RECT
+			
+			draw_time_freeze:
+			# Draw the time_freeze power up if show_time_freeze is 1
+			lw $t1, show_time_freeze
+			
+			beqz $t1, draw_rest
+				# Set up the parameters:
+				li $a0, 46
+				li $a1, 34
+				li $a2, 4
+				li $a3, 4
+				li $t4, 0x529fb3
+				addi $sp, $sp, -4		
+				sw $t4, 0($sp)
+			
+				jal DRAW_RECT
+			
+			draw_rest:
 			# Draw the frog
 			lw $a0, frog_x			# Left corner x
 			lw $a1, frog_y			# Left corner y
@@ -1246,6 +1318,40 @@
 		sw $t2, frog_y
 		
 		# Return
+		jr $ra
+
+#==== ADD LIVES ====================================================================================================================
+	ADD_LIVES:
+		# Increment the lives counter
+		lw $t1, lives
+		addi $t1, $t1, 1
+		sw $t1, lives
+		
+		# Set show_extra_life to 0
+		add $t1, $zero, $zero
+		
+		sw $t1, show_extra_life
+		
+		jr $ra	# Return
+		
+#==== FREEZE TIME ==================================================================================================================
+	STOP_TIME:
+	
+		# Set all the delay counters to 31:
+		li $t1, 31
+		
+		# This means nothing is going to move for 31 frames.
+		sw $t1, car_row_1_delay
+		sw $t1, car_row_2_delay
+		sw $t1, log_row_1_delay
+		sw $t1, log_row_2_delay
+		sw $t1, turtle_row_delay
+		
+		# set show_time_freeze to 0
+		add $t1, $zero, $zero
+		
+		sw $t1, show_time_freeze
+		
 		jr $ra
 
 #==== MOVING PLATFORM ==============================================================================================================
