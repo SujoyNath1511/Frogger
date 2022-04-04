@@ -1029,9 +1029,6 @@
 				reset_counter:
 				
 				sw $t2, refresh_delay
-				add $a0, $zero, $t2
-				li $v0, 1
-				syscall 
 				
 				# Reset the counter
 				li $t1, 60
