@@ -14,15 +14,20 @@
 #
 # Which milestone is reached in this submission?
 # (See the assignment handout for descriptions of the milestones)
-# - Milestone 1
-# - Milestone 2
-# - Milestone 3 (Mostly)
-# - Milestone 4
-# - 
+# - Milestone 1 (Done)
+# - Milestone 2 (Done)
+# - Milestone 3 (Done)
+# - Milestone 4 (Done)
+# - Milestone 5 (in progress)
 # 
 # Which approved additional features have been implemented?
 # (See the assignment handout for the list of additional features)
-# 1. None
+# 1. (Easy) Display the number of lives remaining
+# 2. (Easy) Dynamic increase in difficulty (reduced the sleep time as the game continues so that objects update and move faster)
+# 3. (Easy) Have objects in different rows move at different speeds
+# 4. (Easy) Randomize the size and appearance of the logs and cars
+# 5. (Easy) Make the frog point in the direction that it's traveling
+# 6. (Hard) Add powerups to scene (extra lives (in progress))
 #
 # Any additional information that the TA needs to know:
 # - The program currently only terminates when you stop it in the Assembly runner. Otherwise it continues in an infinite loop.
@@ -32,6 +37,9 @@
 #   (4 unit height * 64 columns)^2 = 256^2 = 65536. Thus, because memory is allocated contiguously in Assembly, I created a
 #   variable (extraMemory) that allocates extra space for the display to use. There is an 8 byte buffer between the display and 
 #   the next variable.
+# 
+# - Sometimes it might look like the frogger should be dead when most of it is in the water, however it remains alive because part of it
+#   is above the water, colliding with a log or turtle. 
 #
 #####################################################################
 #
@@ -60,6 +68,13 @@
 	# Start zone and safe zone color
 	start_col: .word 0x0f4d16
 	
+	#------------------------------------------------------------------------------------------------------------------
+	# GOAL ZONE LOCATIONS
+	#------------------------------------------------------------------------------------------------------------------
+	goal_zone_size: .word 8					# The side lenght of a goal zone
+	goal_zone_filled_col: .word 0x36452d	# The color of a filled goal zone
+	goal_zone_x_arr: .space 16				# An array filled with the x coordinates for the goal zones.
+	goal_zone_col_array: .space 16			# An array for the colors of each goal zone.	
 	#------------------------------------------------------------------------------------------------------------------
 	# FROG
 	#------------------------------------------------------------------------------------------------------------------
@@ -164,6 +179,19 @@
 	log_row_2_delay: .word 2				# Update every 2 frames
 	turtle_row_delay: .word 3				# Update every 3 frames
 	
+	#---------------------------------------------------------------------------------------------------------------------
+	# REFRESH DELAY
+	#---------------------------------------------------------------------------------------------------------------------
+	refresh_delay: .word 16
+	#---------------------------------------------------------------------------------------------------------------------
+	# DYNAMIC DIFFICULTY COUNTER
+	#---------------------------------------------------------------------------------------------------------------------
+	dynamic_diff_counter: .word 60
+	
+	#---------------------------------------------------------------------------------------------------------------------
+	#---------------------------------------------------------------------------------------------------------------------
+	
+	
 .text
 
 # MAIN Program =================================================================================================================
@@ -171,6 +199,31 @@
 		# INTIALIZE ALL THE VARIABLES:
 		lw $t0, displayAddress # $t0 stores the base address for display
 		la $s0, displayBuffer  # $s0 stores the base address for the buffer.
+		
+		# Set the locations and colors for the goal_zones:
+		la $t1, goal_zone_x_arr
+		la $t3, goal_zone_col_array
+		lw $t4, goal_col 
+		
+		# Location for the first:
+		li $t2, 0
+		sw $t2, 0($t1)
+		sw $t4, 0($t3)
+	
+		# Location for the second:
+		li $t2, 16
+		sw $t2, 4($t1)
+		sw $t4, 4($t3)
+		
+		# Location for the third:
+		li $t2, 32
+		sw $t2, 8($t1)
+		sw $t4, 8($t3)
+		
+		# Location for the fourth:
+		li $t2, 48
+		sw $t2, 12($t1)
+		sw $t4, 12($t3)
 		
 		# Set the sizes for the logs and cars: (Randomize size of logs and cars)
 		li $v0, 42
@@ -221,6 +274,12 @@
 		sw $a0, car_large_2_col
 		
 		game_loop_start:
+			
+			# Check if lives have reached zero.
+			lw $t1, lives
+			
+			# End the game if lives is less than or equal to 0
+			blez $t1, game_loop_end
 		
 			# CHECK FOR KEYBOARD INPUT AND UPDATE FROG POSITION: -------------------------------------------------------------------
 			jal CHECK_KEYBOARD 
@@ -234,6 +293,7 @@
 			beq $t1, 24, check_log_row_1
 			beq $t1, 16, check_turtle_row
 			beq $t1, 8, check_log_row_2
+			beq $t1, 0, check_goal_collision
 			j end_collision_check
 			
 			check_car_row_1:
@@ -391,6 +451,84 @@
 				jal DETECT_COLLISION
 				
 				jal MOVING_PLATFORM
+				
+				j end_collision_check
+			
+			check_goal_collision:
+				# Get the address of the array:
+				la $s2, goal_zone_x_arr
+				la $s3, goal_zone_col_array
+				lw $s4, goal_zone_filled_col
+				
+				# Check collision with goal 1
+				lw $a0, 0($s2)
+				li $a1, 0
+				lw $a2, goal_zone_size
+				lw $a3, goal_zone_size
+				
+				jal DETECT_COLLISION
+				
+				# If collision is false, then check the next goal
+				beq $v0, 0, check_goal_2
+				sw $s4, 0($s3)				# Store the filled color into the color array.
+				li $t1, 28
+				li $t2, 56
+				sw $t1, frog_x
+				sw $t2, frog_y
+				j end_collision_check		# End the collision check
+				
+				check_goal_2:
+				# Check collision with goal 2
+				lw $a0, 4($s2)
+				li $a1, 0
+				lw $a2, goal_zone_size
+				lw $a3, goal_zone_size
+				
+				jal DETECT_COLLISION
+				
+				# If collision is false, then check the next goal
+				beq $v0, 0, check_goal_3
+				sw $s4, 4($s3)				# Store the filled color into the color array.
+				li $t1, 28
+				li $t2, 56
+				sw $t1, frog_x
+				sw $t2, frog_y
+				j end_collision_check		# End the collision check
+				
+				check_goal_3:
+				# Check collision with goal 3
+				lw $a0, 8($s2)
+				li $a1, 0
+				lw $a2, goal_zone_size
+				lw $a3, goal_zone_size
+				
+				jal DETECT_COLLISION
+				
+				# If collision is false, then check the next goal
+				beq $v0, 0, check_goal_4
+				sw $s4, 8($s3)				# Store the filled color into the color array.
+				li $t1, 28
+				li $t2, 56
+				sw $t1, frog_x
+				sw $t2, frog_y
+				j end_collision_check		# End the collision check
+				
+				check_goal_4:
+				# Check collision with goal 4
+				lw $a0, 12($s2)
+				li $a1, 0
+				lw $a2, goal_zone_size
+				lw $a3, goal_zone_size
+				
+				jal DETECT_COLLISION
+				
+				# If collision is false, then check the next goal
+				beq $v0, 0, end_collision_check
+				sw $s4, 12($s3)				# Store the filled color into the color array.
+				li $t1, 28
+				li $t2, 56
+				sw $t1, frog_x
+				sw $t2, frog_y
 			
 			end_collision_check:
 			
@@ -653,7 +791,7 @@
 			lw $a1, log_2_y				# Left corner y
 			lw $a2, log_large_w			# width
 			lw $a3, log_large_h			# height
-			lw $t4, log_col_1 			# color
+			lw $t4, log_col_2 			# color
 			addi $sp, $sp, -4		
 			sw $t4, 0($sp)
 			
@@ -716,6 +854,48 @@
 			
 			jal DRAW_RECT		# Draw the log
 			
+			# Draw the goal zones:
+			la $s2, goal_zone_x_arr
+			la $s3, goal_zone_col_array
+			lw $a2, goal_zone_size
+			lw $a3, goal_zone_size
+			
+			# Draw goal zone 1
+			lw $a0, 0($s2)
+			li $a1, 0
+			lw $t4, 0($s3)
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT
+			
+			# Draw goal zone 2
+			lw $a0, 4($s2)
+			li $a1, 0
+			lw $t4, 4($s3)
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT
+			
+			# Draw goal zone 3
+			lw $a0, 8($s2)
+			li $a1, 0
+			lw $t4, 8($s3)
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT
+			
+			# Draw goal zone 4
+			lw $a0, 12($s2)
+			li $a1, 0
+			lw $t4, 12($s3)
+			addi $sp, $sp, -4		
+			sw $t4, 0($sp)
+			
+			jal DRAW_RECT
+			
 			# Draw the frog
 			lw $a0, frog_x			# Left corner x
 			lw $a1, frog_y			# Left corner y
@@ -762,9 +942,33 @@
 			addi $t1, $t1, -1
 			sw $t1, turtle_row_delay
 			
-			# SLEEP ----------------------------------------------------------------------------------------
+			# SLEEP -----------------------------------------------------------------------------------------------------------
+			lw $t1, dynamic_diff_counter
+			addi $t1, $t1, -1
+			sw $t1, dynamic_diff_counter
+			
+			bgtz $t1, sleep
+				# First, decrease the refresh delay
+				lw $t2, refresh_delay
+				addi $t2, $t2, -4
+				
+				bgt $t2, 2, reset_counter
+				li $t2, 2
+				
+				reset_counter:
+				
+				sw $t2, refresh_delay
+				add $a0, $zero, $t2
+				li $v0, 1
+				syscall 
+				
+				# Reset the counter
+				li $t1, 60
+				sw $t1, dynamic_diff_counter
+			
+			sleep:
 			li $v0, 32
-			li $a0, 12
+			lw $a0, refresh_delay
 			syscall
 			
 			# GO BACK TO THE BEGINNING ----------------------------------------------------------------------------------------
@@ -867,6 +1071,15 @@
 		lw $t1, frog_x
 		lw $t2, frog_y
 		
+		# Check for overwrite
+		sle $t6, $t1, 32	# If the frog is on the left side of the screen
+		sgt $t7, $a2, 63	# If the rectangle is being wrapped around the screen
+		and $t6, $t6, $t7	# If both are true
+		bne $t6, 1, check_collision		# If it is not true, then skip
+		li $a0, 0
+		subi $a2, $a2, 63
+		
+		check_collision:
 		# Set s1 to be the return address (s1 = ra)
 		add $s1, $zero, $ra
 		
@@ -1682,8 +1895,6 @@
 		end_draw_lives_loop:
 		
 		jr $s1
-		
-		
 	
 #==== Draw onto the Bitmap Display =====================================================================================
 	
