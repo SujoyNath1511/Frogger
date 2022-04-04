@@ -30,8 +30,7 @@
 # 6. (Hard) Add powerups to scene (extra lives and time freeze)
 #
 # Any additional information that the TA needs to know:
-# - The program currently only terminates when you stop it in the Assembly runner. Otherwise it continues in an infinite loop.
-# 	This is because I still haven't implemented the collision detection which would result in the game to restart.
+# - The program terminates when the frog loses all lives, otherwise the game keeps going.
 # 
 # - The displayAddress ($gp) allocates about 32768 bytes of memory. I need about 65536 bytes of memory for the display 
 #   (4 unit height * 64 columns)^2 = 256^2 = 65536. Thus, because memory is allocated contiguously in Assembly, I created a
